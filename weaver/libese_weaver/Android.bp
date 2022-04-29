@@ -17,6 +17,8 @@ cc_library_shared {
     cflags: [
         "-Wall",
         "-Werror",
+        "-DINTERVAL_TIMER",
+        "-DNXP_EXTNS",
     ],
 
     shared_libs: [
