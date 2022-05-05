@@ -20,6 +20,7 @@ cc_binary {
         "libhidlbase",
         "liblog",
         "libutils",
+        "libbinder_ndk",
     ],
 
     local_include_dirs: [
