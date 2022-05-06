@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020-2021 NXP
+ *  Copyright 2020-2022 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,11 +17,17 @@
  ******************************************************************************/
 
 #define LOG_TAG "weaver-transport-impl"
-#include <vector>
 #include <ITransport.h>
 #include <TransportFactory.h>
+#include <cutils/properties.h>
+#include <vector>
 #include <weaver_transport-impl.h>
 #include <weaver_utils.h>
+
+#define MAX_RETRY_COUNT 12
+#define RETRY_DELAY_INTERVAL_SEC 1
+#define PROP_SYSBOOT_COMPLETED "sys.boot_completed"
+#define SYSBOOT_COMPLETED_VALUE 1
 
 WeaverTransportImpl *WeaverTransportImpl::s_instance = NULL;
 std::once_flag WeaverTransportImpl::s_instanceFlag;
@@ -131,9 +137,25 @@ bool WeaverTransportImpl::CloseApplet() {
 bool WeaverTransportImpl::Send(std::vector<uint8_t> data,
                                std::vector<uint8_t> &resp) {
   LOG_D(TAG, "Entry");
+  int retry = 1;
+  bool status = false;
   // Opens the channel with aid and transmit the data
-  bool status =
-      getTransportFactoryInstance()->sendData(data.data(), data.size(), resp);
+  do {
+    status =
+        getTransportFactoryInstance()->sendData(data.data(), data.size(), resp);
+    if (!status) {
+      if (!isDeviceBootCompleted()) {
+        LOG_D(TAG, ": Device boot not completed, no retry required");
+        break;
+      }
+      if (retry > MAX_RETRY_COUNT) {
+        LOG_E(TAG, ": completed max retries exit failure");
+      } else {
+        sleep(RETRY_DELAY_INTERVAL_SEC);
+        LOG_E(TAG, ": retry  %d/%d", retry, MAX_RETRY_COUNT);
+      }
+    }
+  } while ((!status) && (retry++ <= MAX_RETRY_COUNT));
   LOG_D(TAG, "Exit");
   return status;
 }
@@ -149,4 +171,18 @@ bool WeaverTransportImpl::DeInit() {
   bool status = CloseApplet();
   LOG_D(TAG, "Exit");
   return status;
+}
+
+/**
+ * \brief Function to determine if phone boot completed
+ *
+ * \retval This function return true in case of phone boot
+ *        completed and false in case not completed.
+ */
+bool WeaverTransportImpl::isDeviceBootCompleted() {
+  if (property_get_int64(PROP_SYSBOOT_COMPLETED, 0) ==
+      SYSBOOT_COMPLETED_VALUE) {
+    return true;
+  }
+  return false;
 }
