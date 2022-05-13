@@ -134,14 +134,14 @@ Status_Weaver WeaverImpl::Read(uint32_t slotId, const std::vector<uint8_t> &key,
   RETURN_IF_NULL(mTransport, WEAVER_STATUS_FAILED, "Transport is NULL");
   RETURN_IF_NULL(mParser, WEAVER_STATUS_FAILED, "Parser is NULL");
   Status_Weaver status = WEAVER_STATUS_FAILED;
-  std::vector<uint8_t> readCmd;
+  std::vector<uint8_t> cmd;
   std::vector<uint8_t> resp;
   std::vector<uint8_t> aid;
   /* transport library don't require open applet
    * open will be done as part of send */
   LOG_D(TAG, "Read from Slot (%u)", slotId);
-  if (mParser->FrameReadCmd(slotId, key, readCmd) &&
-      mTransport->Send(readCmd, resp)) {
+  if (mParser->FrameReadCmd(slotId, key, cmd) &&
+      mTransport->Send(cmd, resp)) {
     status = WEAVER_STATUS_OK;
   }
 #ifndef INTERVAL_TIMER
@@ -152,6 +152,18 @@ Status_Weaver WeaverImpl::Read(uint32_t slotId, const std::vector<uint8_t> &key,
 #endif
   if (status == WEAVER_STATUS_OK) {
     status = mParser->ParseReadInfo(resp, readRespInfo);
+    if (status == WEAVER_STATUS_THROTTLE) {
+      cmd.clear();
+      resp.clear();
+      if (mParser->FrameGetDataCmd(WeaverParserImpl::sThrottleGetDataP1, (uint8_t)slotId, cmd) &&
+          (mTransport->Send(cmd, resp))) {
+        GetDataRespInfo getDataInfo;
+        if (mParser->ParseGetDataInfo(resp, getDataInfo) == WEAVER_STATUS_OK) {
+          /* convert timeout from getDataInfo sec to millisec assign same to read response */
+          readRespInfo.timeout = (getDataInfo.timeout * 1000);
+        }
+      }
+    }
   } else {
     LOG_E(TAG, "Failed to perform Read Request for slot (%u)", slotId);
   }
