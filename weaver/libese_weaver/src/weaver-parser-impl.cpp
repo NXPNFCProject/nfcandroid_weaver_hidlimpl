@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020 NXP
+ *  Copyright 2020, 2022 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -61,6 +61,9 @@ std::once_flag WeaverParserImpl::s_instanceFlag;
 #define BYTE3_MSB_POS 8
 #define BYTE2_MSB_POS 16
 #define BYTE1_MSB_POS 24
+
+/* byte info for GP header of weaver get data command */
+#define INS_GET_DATA 0xCA
 
 /* Applet ID to be used for Weaver */
 const std::vector<uint8_t> kWeaverAID = {0xA0, 0x00, 0x00, 0x03,
@@ -190,6 +193,29 @@ bool WeaverParserImpl::FrameWriteCmd(uint32_t slotId,
 }
 
 /**
+ * \brief Function to Frame weaver applet request command for get data
+ *
+ * \param[in]     p1      - p1 value for get Data command.
+ * \param[in]     p2      - p2 value for get Data command.
+ * \param[out]    request - framed get data command as vector
+ *
+ * \retval This function return true in case of success
+ *         In case of failure returns false.
+ */
+bool WeaverParserImpl::FrameGetDataCmd(uint8_t p1, uint8_t p2,
+                                      std::vector<uint8_t> &request) {
+  LOG_D(TAG, "Entry");
+  request.clear();
+  request.push_back(CLA);
+  request.push_back(INS_GET_DATA);
+  request.push_back(p1);
+  request.push_back(p2);
+  request.push_back(LE);
+  LOG_D(TAG, "Exit");
+  return true;
+}
+
+/**
  * \brief Function to Parse getSlots response
  *
  * \param[in]     response  - response from applet.
@@ -237,7 +263,7 @@ Status_Weaver WeaverParserImpl::ParseReadInfo(std::vector<uint8_t> response,
     return status;
   }
   if (isSuccess(response)) {
-    readInfo.timeout = 0; // Applet not supporting timeout value
+    readInfo.timeout = 0; // Applet not supporting timeout value in read response
     switch (response.at(READ_ERR_CODE_INDEX)) {
     case INCORRECT_KEY_TAG:
       LOG_E(TAG, "INCORRECT_KEY");
@@ -267,6 +293,71 @@ Status_Weaver WeaverParserImpl::ParseReadInfo(std::vector<uint8_t> response,
     }
   }
   LOG_D(TAG, "Exit");
+  return status;
+}
+
+/**
+ * \brief Function to Parse get data response
+ *
+ * \param[in]     response  - response from applet.
+ * \param[out]    readInfo  - parsed Get data Information read out from applet
+ * response.
+ *
+ * \retval This function return true in case of success
+ *         In case of failure returns false.
+ */
+Status_Weaver WeaverParserImpl::ParseGetDataInfo(std::vector<uint8_t> response,
+    GetDataRespInfo &getDataInfo) {
+  LOG_D(TAG, "Entry");
+  Status_Weaver status = WEAVER_STATUS_FAILED;
+  int remainingLen  = response.size();
+  if (remainingLen < RES_STATUS_SIZE) {
+    LOG_E(TAG, "Exit Invalid Response Size");
+    return status;
+  }
+  if (!isSuccess(response)) {
+    LOG_E(TAG, "Invalid Response code");
+    return status;
+  }
+  remainingLen -= RES_STATUS_SIZE;
+  uint8_t *readOffset = response.data();
+  /* remaining response should contains at least 1 byte for TAG value */
+  if (remainingLen < sizeof(uint8_t)) {
+    LOG_E(TAG, "Invalid get data response");
+    return status;
+  }
+  switch (*readOffset++) {
+    case sThrottleGetDataP1:
+      remainingLen--;
+      /* remaining response should contain at least 8 bytes of data
+       * where 1 byte for slot id, 1 byte for datasize, 4 bytes for timeout
+       * and 2 bytes for failure count */
+      if (remainingLen < ((2 * sizeof(uint8_t)) /* for slot id and datasize */
+            + sizeof(getDataInfo.timeout) + sizeof(getDataInfo.failure_count))) {
+        LOG_E(TAG, "Invalid get data response");
+        break;
+      }
+      readOffset++; // slot id value
+      remainingLen--;
+      /* datasize value should be 6 as 4 bytes for time out + 2 bytes for failure count */
+      if (*readOffset++ == (sizeof(getDataInfo.timeout) +
+            sizeof(getDataInfo.failure_count))) {
+        getDataInfo.timeout =  *readOffset++ << BYTE3_MSB_POS;
+        getDataInfo.timeout |= *readOffset++ << BYTE2_MSB_POS;
+        getDataInfo.timeout |= *readOffset++ << BYTE1_MSB_POS;
+        getDataInfo.timeout |= *readOffset++;
+        getDataInfo.failure_count = *readOffset++ << BYTE3_MSB_POS;
+        getDataInfo.failure_count |= *readOffset;
+        LOG_D(TAG, "THROTTLE timeout (%u) Sec, Failure Count : (%u)", getDataInfo.timeout,
+            getDataInfo.failure_count);
+        status = WEAVER_STATUS_OK;
+      } else {
+        LOG_D(TAG, "Invalid data length in GET THROTTLE DATA response");
+      }
+      break;
+    default:
+      LOG_D(TAG, "Invalid get data response TAG");
+  }
   return status;
 }
 

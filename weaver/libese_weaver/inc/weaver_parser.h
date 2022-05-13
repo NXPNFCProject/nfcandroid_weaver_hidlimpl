@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020 NXP
+ *  Copyright 2020, 2022 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -72,6 +72,19 @@ public:
                              std::vector<uint8_t> &request) = 0;
 
   /**
+   * \brief virtual Function to Frame weaver applet request command for get data
+   *
+   * \param[in]     p1      - p1 value for get Data command.
+   * \param[in]     p2      - p2 value for get Data command.
+   * \param[out]    request - framed get data command as vector
+   *
+   * \retval This function return true in case of success
+   *         In case of failure returns false.
+   */
+  virtual bool FrameGetDataCmd(uint8_t p1, uint8_t p2,
+                            std::vector<uint8_t> &request) = 0;
+
+  /**
    * \brief virtual Function to Parse getSlots response
    *
    * \param[in]     response  - response from applet.
@@ -96,6 +109,19 @@ public:
    */
   virtual Status_Weaver ParseReadInfo(std::vector<uint8_t> response,
                                       ReadRespInfo &readInfo) = 0;
+
+  /**
+   * \brief virtual Function to Parse get data response
+   *
+   * \param[in]     response  - response from applet.
+   * \param[out]    readInfo  - parsed Get data Information read out from applet
+   * response.
+   *
+   * \retval This function return true in case of success
+   *         In case of failure returns false.
+   */
+  virtual Status_Weaver ParseGetDataInfo(std::vector<uint8_t> response,
+                                      GetDataRespInfo &getDataInfo) = 0;
 
   /**
    * \brief virtual Function to check if response from applet is Success or not

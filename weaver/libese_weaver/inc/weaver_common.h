@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020 NXP
+ *  Copyright 2020, 2022 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -43,5 +43,12 @@ typedef struct ReadRespInfo {
   /** The value read from the slot or empty if the value was not read. */
   std::vector<uint8_t> value;
 } ReadRespInfo;
+
+typedef struct GetDataRespInfo {
+  /** The time to wait, in seconds, before making the next request. */
+  uint32_t timeout;
+  /** The current number of failure count */
+  uint16_t failure_count;
+} GetDataRespInfo;
 
 #endif /* _WEAVER_COMMON_H_ */
