@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020 NXP
+ *  Copyright 2020, 2022 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -80,8 +80,11 @@ namespace implementation {
   Return<void>
     Weaver::read(uint32_t slotId, const hidl_vec<uint8_t>& key, read_cb _hidl_cb) {
       ALOGI("Read API ENTRY");
+      if (_hidl_cb == NULL) {
+        return Void();
+      }
       WeaverReadResponse readResp;
-      if(key == NULL || _hidl_cb == NULL || pInterface == NULL) {
+      if (key == NULL || pInterface == NULL) {
         _hidl_cb(WeaverReadStatus::FAILED, readResp);
       } else {
         ReadRespInfo readInfo;
