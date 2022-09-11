@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020 NXP
+ *  Copyright 2020,2022 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -44,6 +44,9 @@ using android::base::StringPrintf;
 
 struct Weaver : public IWeaver, public hidl_death_recipient {
   Weaver();
+  // Methods from ::android::hidl::base::V1_0::IBase follow.
+  Return<void> debug(const hidl_handle &handle,
+                     const hidl_vec<hidl_string> &options) override;
   Return<void>
     getConfig(getConfig_cb _hidl_cb) override;
 
