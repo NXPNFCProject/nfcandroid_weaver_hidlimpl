@@ -289,7 +289,7 @@ Status_Weaver WeaverParserImpl::ParseReadInfo(std::vector<uint8_t> response,
       }
       break;
     default:
-      LOG_E(TAG, "Unkown Tag for Read Response");
+      LOG_E(TAG, "Unknown Tag for Read Response");
     }
   }
   LOG_D(TAG, "Exit");

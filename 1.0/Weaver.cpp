@@ -34,7 +34,7 @@ namespace implementation {
 
   WeaverInterface *pInterface = nullptr;
   Weaver::Weaver() {
-    ALOGI("INITILIZING WEAVER");
+    ALOGI("INITIALIZING WEAVER");
     pInterface = WeaverImpl::getInstance();
     if(pInterface != NULL) {
       pInterface->Init();

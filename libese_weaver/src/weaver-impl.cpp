@@ -47,7 +47,7 @@ void WeaverImpl::createInstance() {
 }
 
 /**
- * \brief Function to initilize Weaver Interface
+ * \brief Function to initialize Weaver Interface
  *
  * \retval This function return Weaver_STATUS_OK (0) in case of success
  *         In case of failure returns other Status_Weaver.
@@ -211,7 +211,7 @@ Status_Weaver WeaverImpl::Write(uint32_t slotId,
 }
 
 /**
- * \brief Function to de-initilize Weaver Interface
+ * \brief Function to de-initialize Weaver Interface
  *
  * \retval This function return Weaver_STATUS_OK (0) in case of success
  *         In case of failure returns other Status_Weaver.

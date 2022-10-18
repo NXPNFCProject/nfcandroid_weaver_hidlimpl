@@ -75,7 +75,7 @@ void WeaverTransportImpl::createInstance() {
 }
 
 /**
- * \brief Function to initilize Weaver Transport Interface
+ * \brief Function to initialize Weaver Transport Interface
  *
  * \param[in]    aid -  applet id to be set to transport interface
  *
@@ -160,7 +160,7 @@ bool WeaverTransportImpl::Send(std::vector<uint8_t> data,
 }
 
 /**
- * \brief Function to de-initilize Weaver Transport Interface
+ * \brief Function to de-initialize Weaver Transport Interface
  *
  * \retval This function return true in case of success
  *         In case of failure returns false.

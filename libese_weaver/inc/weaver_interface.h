@@ -24,7 +24,7 @@
 class WeaverInterface {
 public:
   /**
-   * \brief virtual Function to initilize Weaver Interface
+   * \brief virtual Function to initialize Weaver Interface
    *
    * \retval This function return Weaver_STATUS_OK (0) in case of success
    *         In case of failure returns other Status_Weaver.
@@ -65,7 +65,7 @@ public:
                               const std::vector<uint8_t> &value) = 0;
 
   /**
-   * \brief virtual Function to de-initilize Weaver Interface
+   * \brief virtual Function to de-initialize Weaver Interface
    *
    * \retval This function return Weaver_STATUS_OK (0) in case of success
    *         In case of failure returns other Status_Weaver.

@@ -24,7 +24,7 @@
 class WeaverTransport {
 public:
   /**
-   * \brief virtual Function to initilize Weaver Transport Interface
+   * \brief virtual Function to initialize Weaver Transport Interface
    *
    * \param[in]    aid -  applet id to be set to transport interface
    *
@@ -65,7 +65,7 @@ public:
   virtual bool Send(std::vector<uint8_t> data, std::vector<uint8_t> &resp) = 0;
 
   /**
-   * \brief virtual Function to de-initilize Weaver Transport Interface
+   * \brief virtual Function to de-initialize Weaver Transport Interface
    *
    * \retval This function return true in case of success
    *         In case of failure returns false.
