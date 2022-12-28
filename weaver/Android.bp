@@ -52,3 +52,31 @@ cc_binary {
         "-fexceptions",
     ],
 }
+
+
+cc_binary {
+    name: "android.hardware.weaver-service.nxp",
+    relative_install_path: "hw",
+    init_rc: ["aidl_impl/android.hardware.weaver-service.nxp.rc"],
+    vintf_fragments: ["aidl_impl/android.hardware.weaver-service.nxp.xml"],
+    vendor: true,
+    srcs: [
+        "aidl_impl/service.cpp",
+        "aidl_impl/Weaver.cpp",
+    ],
+
+    local_include_dirs: [
+        "libese_weaver/inc",
+    ],
+    cppflags: [
+        "-Wall",
+        "-fexceptions",
+    ],
+    shared_libs: [
+        "android.hardware.weaver-V1-ndk",
+        "libbase",
+        "libbinder_ndk",
+        "liblog",
+        "ese_weaver",
+    ],
+}
