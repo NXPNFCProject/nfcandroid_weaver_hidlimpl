@@ -69,12 +69,18 @@ ScopedAStatus Weaver::getConfig(WeaverConfig *out_config) {
 ScopedAStatus Weaver::read(int32_t in_slotId, const vector<uint8_t> &in_key,
                            WeaverReadResponse *out_response) {
 
-  ALOGV("Weaver::read");
-  if (in_key.empty() || out_response == NULL) {
+  ALOGV("Weaver::read slot %d", in_slotId);
+  if (out_response == NULL) {
     return ScopedAStatus::fromServiceSpecificErrorWithMessage(
         STATUS_FAILED, "Null pointer passed");
   }
+  if (in_key.empty()) {
+    out_response->status = WeaverReadStatus::FAILED;
+    return ScopedAStatus::fromServiceSpecificErrorWithMessage(
+        STATUS_FAILED, "Empty key input passed");
+  }
   if (pInterface == NULL) {
+    out_response->status = WeaverReadStatus::FAILED;
     return ScopedAStatus::fromServiceSpecificErrorWithMessage(
         STATUS_FAILED, "Weaver interface not defined");
   }
@@ -87,29 +93,30 @@ ScopedAStatus Weaver::read(int32_t in_slotId, const vector<uint8_t> &in_key,
   status = pInterface->Read(in_slotId, in_key, readInfo);
   switch (status) {
   case WEAVER_STATUS_OK:
-    ALOGV("Read OK");
+    ALOGV("Read slot %d OK", in_slotId);
     out_response->value = readInfo.value;
+    out_response->status = WeaverReadStatus::OK;
     retStatus = ScopedAStatus::ok();
     break;
   case WEAVER_STATUS_INCORRECT_KEY:
     ALOGE("Read Incorrect Key");
     out_response->value.resize(0);
     out_response->timeout = readInfo.timeout;
-    retStatus = ScopedAStatus::fromServiceSpecificErrorWithMessage(
-        STATUS_INCORRECT_KEY, "Incorrect key passed");
+    out_response->status = WeaverReadStatus::INCORRECT_KEY;
+    retStatus = ScopedAStatus::ok();
     break;
   case WEAVER_STATUS_THROTTLE:
     ALOGE("Read WEAVER_THROTTLE");
     out_response->value.resize(0);
     out_response->timeout = readInfo.timeout;
-    retStatus = ScopedAStatus::fromServiceSpecificErrorWithMessage(
-        STATUS_THROTTLE, "Throttle active");
+    out_response->status = WeaverReadStatus::THROTTLE;
+    retStatus = ScopedAStatus::ok();
     break;
   default:
     out_response->timeout = 0;
     out_response->value.resize(0);
-    retStatus = ScopedAStatus::fromServiceSpecificErrorWithMessage(
-        STATUS_FAILED, "Unknown error");
+    out_response->status = WeaverReadStatus::FAILED;
+    retStatus = ScopedAStatus::ok();
     break;
   }
   return retStatus;
@@ -117,7 +124,7 @@ ScopedAStatus Weaver::read(int32_t in_slotId, const vector<uint8_t> &in_key,
 
 ScopedAStatus Weaver::write(int32_t in_slotId, const vector<uint8_t> &in_key,
                             const vector<uint8_t> &in_value) {
-  ALOGV("Weaver::write");
+  ALOGV("Weaver::write slot %d", in_slotId);
   if (in_key.empty() || in_value.empty()) {
     return ScopedAStatus::fromServiceSpecificErrorWithMessage(
         STATUS_FAILED, "Invalid parameters passed");
@@ -127,6 +134,7 @@ ScopedAStatus Weaver::write(int32_t in_slotId, const vector<uint8_t> &in_key,
         STATUS_FAILED, "Weaver interface not defined");
   }
   if (pInterface->Write(in_slotId, in_key, in_value) == WEAVER_STATUS_OK) {
+    ALOGV("Write slot %d OK", in_slotId);
     return ScopedAStatus::ok();
   } else {
     return ScopedAStatus::fromServiceSpecificErrorWithMessage(STATUS_FAILED,
