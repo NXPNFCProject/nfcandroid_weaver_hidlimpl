@@ -58,7 +58,7 @@ ScopedAStatus Weaver::getConfig(WeaverConfig *out_config) {
     out_config->slots = slotInfo.slots;
     out_config->keySize = slotInfo.keySize;
     out_config->valueSize = slotInfo.valueSize;
-    ALOGV("Weaver Success for getSlots Slots :(%d)", out_config->slots);
+    ALOGD("Weaver Success for getSlots Slots :(%d)", out_config->slots);
     return ScopedAStatus::ok();
   } else {
     return ScopedAStatus::fromServiceSpecificErrorWithMessage(
@@ -69,7 +69,7 @@ ScopedAStatus Weaver::getConfig(WeaverConfig *out_config) {
 ScopedAStatus Weaver::read(int32_t in_slotId, const vector<uint8_t> &in_key,
                            WeaverReadResponse *out_response) {
 
-  ALOGV("Weaver::read slot %d", in_slotId);
+  ALOGD("Weaver::read slot %d", in_slotId);
   if (out_response == NULL) {
     return ScopedAStatus::fromServiceSpecificErrorWithMessage(
         STATUS_FAILED, "Null pointer passed");
@@ -93,7 +93,7 @@ ScopedAStatus Weaver::read(int32_t in_slotId, const vector<uint8_t> &in_key,
   status = pInterface->Read(in_slotId, in_key, readInfo);
   switch (status) {
   case WEAVER_STATUS_OK:
-    ALOGV("Read slot %d OK", in_slotId);
+    ALOGD("Read slot %d OK", in_slotId);
     out_response->value = readInfo.value;
     out_response->status = WeaverReadStatus::OK;
     retStatus = ScopedAStatus::ok();
@@ -124,7 +124,7 @@ ScopedAStatus Weaver::read(int32_t in_slotId, const vector<uint8_t> &in_key,
 
 ScopedAStatus Weaver::write(int32_t in_slotId, const vector<uint8_t> &in_key,
                             const vector<uint8_t> &in_value) {
-  ALOGV("Weaver::write slot %d", in_slotId);
+  ALOGD("Weaver::write slot %d", in_slotId);
   if (in_key.empty() || in_value.empty()) {
     return ScopedAStatus::fromServiceSpecificErrorWithMessage(
         STATUS_FAILED, "Invalid parameters passed");
@@ -134,7 +134,7 @@ ScopedAStatus Weaver::write(int32_t in_slotId, const vector<uint8_t> &in_key,
         STATUS_FAILED, "Weaver interface not defined");
   }
   if (pInterface->Write(in_slotId, in_key, in_value) == WEAVER_STATUS_OK) {
-    ALOGV("Write slot %d OK", in_slotId);
+    ALOGD("Write slot %d OK", in_slotId);
     return ScopedAStatus::ok();
   } else {
     return ScopedAStatus::fromServiceSpecificErrorWithMessage(STATUS_FAILED,
