@@ -1,6 +1,6 @@
 cc_library_shared {
 
-    name: "ese_weaver",
+    name: "ese_weaver.nxp",
     defaults: ["hidl_defaults"],
     proprietary: true,
 
@@ -25,7 +25,7 @@ cc_library_shared {
     shared_libs: [
         "android.se.omapi-V1-ndk",
         "libcutils",
-        "libjc_keymint_transport",
+        "libjc_keymint_transport.nxp",
         "libhardware",
         "libhidlbase",
         "libutils",

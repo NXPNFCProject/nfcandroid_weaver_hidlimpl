@@ -39,6 +39,6 @@ cc_binary {
         "libbase",
         "libbinder_ndk",
         "liblog",
-        "ese_weaver",
+        "ese_weaver.nxp",
     ],
 }
