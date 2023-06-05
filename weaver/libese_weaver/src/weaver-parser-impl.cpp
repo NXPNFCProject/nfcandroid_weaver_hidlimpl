@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020, 2022 NXP
+ *  Copyright 2020, 2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -342,9 +342,9 @@ Status_Weaver WeaverParserImpl::ParseGetDataInfo(std::vector<uint8_t> response,
       /* datasize value should be 6 as 4 bytes for time out + 2 bytes for failure count */
       if (*readOffset++ == (sizeof(getDataInfo.timeout) +
             sizeof(getDataInfo.failure_count))) {
-        getDataInfo.timeout =  *readOffset++ << BYTE3_MSB_POS;
+        getDataInfo.timeout =  *readOffset++ << BYTE1_MSB_POS;
         getDataInfo.timeout |= *readOffset++ << BYTE2_MSB_POS;
-        getDataInfo.timeout |= *readOffset++ << BYTE1_MSB_POS;
+        getDataInfo.timeout |= *readOffset++ << BYTE3_MSB_POS;
         getDataInfo.timeout |= *readOffset++;
         getDataInfo.failure_count = *readOffset++ << BYTE3_MSB_POS;
         getDataInfo.failure_count |= *readOffset;
