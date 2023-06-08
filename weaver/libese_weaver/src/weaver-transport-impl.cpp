@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020-2022 NXP
+ *  Copyright 2020-2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -84,7 +84,7 @@ void WeaverTransportImpl::createInstance() {
  */
 bool WeaverTransportImpl::Init(std::vector<uint8_t> aid) {
   LOG_D(TAG, "Entry");
-  kAppletId = aid;
+  kAppletId = std::move(aid);
   LOG_D(TAG, "Exit");
   return true;
 }

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020, 2022 NXP
+ *  Copyright 2020, 2022-2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -370,7 +370,7 @@ Status_Weaver WeaverParserImpl::ParseGetDataInfo(std::vector<uint8_t> response,
  *         and false in other cases.
  */
 bool WeaverParserImpl::isSuccess(std::vector<uint8_t> response) {
-  return (checkStatus(response) == APP_SUCCESS) ? true : false;
+  return (checkStatus(std::move(response)) == APP_SUCCESS) ? true : false;
 }
 
 /**
