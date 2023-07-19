@@ -146,7 +146,8 @@ Status_Weaver WeaverImpl::Read(uint32_t slotId, const std::vector<uint8_t> &key,
   }
   if (status == WEAVER_STATUS_OK) {
     status = mParser->ParseReadInfo(resp, readRespInfo);
-    if (status == WEAVER_STATUS_THROTTLE) {
+    if (status == WEAVER_STATUS_THROTTLE ||
+        status == WEAVER_STATUS_INCORRECT_KEY) {
       cmd.clear();
       resp.clear();
       if (mParser->FrameGetDataCmd(WeaverParserImpl::sThrottleGetDataP1, (uint8_t)slotId, cmd) &&
