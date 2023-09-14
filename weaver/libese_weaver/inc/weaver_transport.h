@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020 NXP
+ *  Copyright 2020, 2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -26,12 +26,12 @@ public:
   /**
    * \brief virtual Function to initialize Weaver Transport Interface
    *
-   * \param[in]    aid -  applet id to be set to transport interface
+   * \param[in]    aid -  applet ids to be set to transport interface
    *
    * \retval This function return true in case of success
    *         In case of failure returns false.
    */
-  virtual bool Init(std::vector<uint8_t> aid) = 0;
+  virtual bool Init(std::vector<std::vector<uint8_t>> aid) = 0;
 
   /**
    * \brief virtual Function to open applet connection

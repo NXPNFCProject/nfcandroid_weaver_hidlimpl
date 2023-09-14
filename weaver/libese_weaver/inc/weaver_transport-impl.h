@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020, 2022 NXP
+ *  Copyright 2020, 2022-2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ public:
    * \retval This function return true in case of success
    *         In case of failure returns false.
    */
-  bool Init(std::vector<uint8_t> aid) override;
+  bool Init(std::vector<std::vector<uint8_t>> aid) override;
 
   /**
    * \brief Function to open applet connection
@@ -105,6 +105,10 @@ private:
    * Same will be used for std::call_once
    */
   static void createInstance();
+  /* Private wrapper function to send apdu.
+   * It will try with alternate aids if sending is failed.
+   */
+  bool sendInternal(std::vector<uint8_t> data, std::vector<uint8_t> &resp);
 };
 
 #endif /* _WEAVER_TRANSPORT_IMPL_H_ */

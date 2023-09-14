@@ -58,7 +58,7 @@ Status_Weaver WeaverImpl::Init() {
   mParser = WeaverParserImpl::getInstance();
   RETURN_IF_NULL(mTransport, WEAVER_STATUS_FAILED, "Transport is NULL");
   RETURN_IF_NULL(mParser, WEAVER_STATUS_FAILED, "Parser is NULL");
-  std::vector<uint8_t> aid;
+  std::vector<std::vector<uint8_t>> aid;
   mParser->getAppletId(aid);
   if (!mTransport->Init(std::move(aid))) {
     LOG_E(TAG, "Not able to Initilaize Transport Interface");

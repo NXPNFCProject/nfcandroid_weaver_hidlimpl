@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020, 2022 NXP
+ *  Copyright 2020, 2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -136,12 +136,12 @@ public:
   /**
    * \brief virtual Function to get Weaver Applet ID
    *
-   * \param[out]    aid  - applet id of the weaver applet.
+   * \param[out]    aid  - applet ids of the weaver applet.
    *
    * \retval This function return true in case of success
    *         In case of failure returns false.
    */
-  virtual bool getAppletId(std::vector<uint8_t> &aid) = 0;
+  virtual bool getAppletId(std::vector<std::vector<uint8_t>> &aid) = 0;
 
   /**
    * \brief virtual destructor for weaver parser

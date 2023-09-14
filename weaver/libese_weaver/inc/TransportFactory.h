@@ -30,7 +30,7 @@
  ** See the License for the specific language governing permissions and
  ** limitations under the License.
  **
- ** Copyright 2020-2022 NXP
+ ** Copyright 2020-2023 NXP
  **
  *********************************************************************************/
 
@@ -71,6 +71,13 @@ class TransportFactory {
     }
 
     ~TransportFactory() {}
+
+    /**
+     * Sets Applet AID.
+     */
+    inline bool setAppletAid(const std::vector<uint8_t> &aid) {
+        return mTransport->setAppletAid(aid);
+    }
 
     /**
      * Establishes a communication channel with the secure element.

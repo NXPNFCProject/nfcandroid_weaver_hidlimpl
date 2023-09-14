@@ -27,12 +27,15 @@
 #define RETRY_DELAY_INTERVAL_SEC 1
 #define PROP_SYSBOOT_COMPLETED "sys.boot_completed"
 #define SYSBOOT_COMPLETED_VALUE 1
+#define IS_APPLET_SELECTION_FAILED(resp)                                       \
+  (!resp.empty() && resp[0] == APP_NOT_FOUND_SW1 &&                            \
+   resp[1] == APP_NOT_FOUND_SW2)
 
 WeaverTransportImpl *WeaverTransportImpl::s_instance = NULL;
 std::once_flag WeaverTransportImpl::s_instanceFlag;
 
 /* Applet ID to be use for communication */
-std::vector<uint8_t> kAppletId;
+std::vector<std::vector<uint8_t>> kAppletId;
 
 /* Interface instance of libese-transport library */
 static std::unique_ptr<se_transport::TransportFactory> pTransportFactory =
@@ -45,7 +48,7 @@ static inline std::unique_ptr<se_transport::TransportFactory> &
 getTransportFactoryInstance() {
   if (pTransportFactory == nullptr) {
     pTransportFactory = std::unique_ptr<se_transport::TransportFactory>(
-        new se_transport::TransportFactory(false, kAppletId));
+        new se_transport::TransportFactory(false, kAppletId[0]));
     pTransportFactory->openConnection();
   }
   return pTransportFactory;
@@ -82,7 +85,7 @@ void WeaverTransportImpl::createInstance() {
  * \retval This function return true in case of success
  *         In case of failure returns false.
  */
-bool WeaverTransportImpl::Init(std::vector<uint8_t> aid) {
+bool WeaverTransportImpl::Init(std::vector<std::vector<uint8_t>> aid) {
   LOG_D(TAG, "Entry");
   kAppletId = std::move(aid);
   LOG_D(TAG, "Exit");
@@ -125,6 +128,40 @@ bool WeaverTransportImpl::CloseApplet() {
 }
 
 /**
+ * \brief Private wrapper function to send apdu.
+ * It will try with alternate aids if sending is failed.
+ *
+ * \param[in]    data -         command to be send to applet
+ * \param[out]   resp -         response from applet
+ *
+ * \retval This function return true in case of success
+ *         In case of failure returns false.
+ */
+bool WeaverTransportImpl::sendInternal(std::vector<uint8_t> data,
+                                       std::vector<uint8_t> &resp) {
+  bool status = false;
+  status =
+      getTransportFactoryInstance()->sendData(data.data(), data.size(), resp);
+  if (!status && IS_APPLET_SELECTION_FAILED(resp)) {
+    LOG_E(TAG, ": send Failed, trying with alternateAids");
+    // If Applet selection failed, try with alternate Aids
+    for (int i = 1; i < kAppletId.size(); i++) {
+      getTransportFactoryInstance()->setAppletAid(kAppletId[i]);
+      status = getTransportFactoryInstance()->sendData(data.data(), data.size(),
+                                                       resp);
+      if (status) {
+        return status;
+      }
+    }
+    if (!status) {
+      // None of alternate Aids success, Revert back to primary AID
+      getTransportFactoryInstance()->setAppletAid(kAppletId[0]);
+    }
+  }
+  return status;
+}
+
+/**
  * \brief Function to send commands to applet
  *
  * \param[in]    data -         command to be send to applet
@@ -140,8 +177,7 @@ bool WeaverTransportImpl::Send(std::vector<uint8_t> data,
   bool status = false;
   // Opens the channel with aid and transmit the data
   do {
-    status =
-        getTransportFactoryInstance()->sendData(data.data(), data.size(), resp);
+    status = sendInternal(data, resp);
     if (!status) {
       if (!isDeviceBootCompleted()) {
         LOG_D(TAG, ": Device boot not completed, no retry required");

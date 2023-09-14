@@ -66,8 +66,11 @@ std::once_flag WeaverParserImpl::s_instanceFlag;
 #define INS_GET_DATA 0xCA
 
 /* Applet ID to be used for Weaver */
-const std::vector<uint8_t> kWeaverAID = {0xA0, 0x00, 0x00, 0x03,
-                                         0x96, 0x10, 0x10};
+const std::vector<std::vector<uint8_t>> kWeaverAIDs = {
+    {0xA0, 0x00, 0x00, 0x03, 0x96, 0x10, 0x10}, // Primary AID
+    {0xA0, 0x00, 0x00, 0x03, 0x96, 0x54, 0x53, 0x00, 0x00, 0x00, 0x01, 0x00,
+     0x23, 0x00, 0x00, 0x00}, // Alternate AID
+};
 
 /**
  * \brief static function to get the singleton instance of WeaverParserImpl
@@ -419,11 +422,11 @@ WeaverParserImpl::checkStatus(std::vector<uint8_t> response) {
  * \retval This function return true in case of success
  *         In case of failure returns false.
  */
-bool WeaverParserImpl::getAppletId(std::vector<uint8_t> &aid) {
+bool WeaverParserImpl::getAppletId(std::vector<std::vector<uint8_t>> &aid) {
   LOG_D(TAG, "Entry");
   bool status = false;
-  if (kWeaverAID.size() > 0) {
-    aid = kWeaverAID;
+  if (kWeaverAIDs.size() > 0) {
+    aid = kWeaverAIDs;
     status = true;
   }
   LOG_D(TAG, "Exit");
