@@ -156,6 +156,9 @@ Status_Weaver WeaverImpl::Read(uint32_t slotId, const std::vector<uint8_t> &key,
         if (mParser->ParseGetDataInfo(std::move(resp), getDataInfo) == WEAVER_STATUS_OK) {
           /* convert timeout from getDataInfo sec to millisec assign same to read response */
           readRespInfo.timeout = (getDataInfo.timeout * 1000);
+          if (getDataInfo.timeout > 0) {
+            status = WEAVER_STATUS_THROTTLE;
+          }
         }
       }
     }
