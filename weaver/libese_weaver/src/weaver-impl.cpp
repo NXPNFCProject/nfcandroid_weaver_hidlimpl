@@ -61,7 +61,7 @@ Status_Weaver WeaverImpl::Init() {
   std::vector<std::vector<uint8_t>> aid;
   mParser->getAppletId(aid);
   if (!mTransport->Init(std::move(aid))) {
-    LOG_E(TAG, "Not able to Initilaize Transport Interface");
+    LOG_E(TAG, "Not able to Initialize Transport Interface");
     LOG_D(TAG, "Exit : FAILED");
     return WEAVER_STATUS_FAILED;
   }
@@ -154,7 +154,7 @@ Status_Weaver WeaverImpl::Read(uint32_t slotId, const std::vector<uint8_t> &key,
           (mTransport->Send(cmd, resp))) {
         GetDataRespInfo getDataInfo;
         if (mParser->ParseGetDataInfo(std::move(resp), getDataInfo) == WEAVER_STATUS_OK) {
-          /* convert timeout from getDataInfo sec to millisec assign same to read response */
+          /* convert timeout from getDataInfo sec to millisecond assign same to read response */
           readRespInfo.timeout = (getDataInfo.timeout * 1000);
           if (getDataInfo.timeout > 0) {
             status = WEAVER_STATUS_THROTTLE;

@@ -62,7 +62,7 @@ ScopedAStatus Weaver::getConfig(WeaverConfig *out_config) {
     return ScopedAStatus::ok();
   } else {
     return ScopedAStatus::fromServiceSpecificErrorWithMessage(
-        STATUS_FAILED, "Failed to retreive slots info");
+        STATUS_FAILED, "Failed to retrieve slots info");
   }
 }
 

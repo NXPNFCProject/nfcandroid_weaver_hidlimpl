@@ -162,7 +162,7 @@ private:
     APP_INVALID_LEN,
     APP_INVALID_SLOT,
     APP_INVALID_P1_P2,
-    APP_UNKONWN_ERR,
+    APP_UNKNOWN_ERR,
   };
 
   /**
