@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020, 2022-2023 NXP
+ *  Copyright 2020, 2022-2024 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -90,8 +90,6 @@ private:
   WeaverTransportImpl(const WeaverTransportImpl &) = delete;
   /* Private operator overload to make class singleton*/
   WeaverTransportImpl &operator=(const WeaverTransportImpl &) = delete;
-  /* Private api to detect if device boot completed or not*/
-  bool isDeviceBootCompleted();
 
   /* Private self instance for singleton purpose*/
   static WeaverTransportImpl *s_instance;
