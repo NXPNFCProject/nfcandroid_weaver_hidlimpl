@@ -90,8 +90,6 @@ private:
   WeaverTransportImpl(const WeaverTransportImpl &) = delete;
   /* Private operator overload to make class singleton*/
   WeaverTransportImpl &operator=(const WeaverTransportImpl &) = delete;
-  /* Private api to detect if device boot completed or not*/
-  bool isDeviceBootCompleted();
 
   /* Private self instance for singleton purpose*/
   static WeaverTransportImpl *s_instance;

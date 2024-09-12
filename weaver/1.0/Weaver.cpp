@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020,2022 NXP
+ *  Copyright 2020, 2022 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@
 #define LOG_TAG "Weaver@1.0-service"
 
 #include "Weaver.h"
-#include <hidl/LegacySupport.h>
 #include <log/log.h>
-#include <memunreachable/memunreachable.h>
 #include <string.h>
-#include <weaver-impl.h>
+#include <hidl/LegacySupport.h>
 #include <weaver_interface.h>
+#include <weaver-impl.h>
+
 /* Mutex to synchronize multiple transceive */
 
 namespace android {
@@ -120,12 +120,6 @@ namespace implementation {
     if(pInterface != NULL) {
       pInterface->DeInit();
     }
-  }
-  Return<void> Weaver::debug(const hidl_handle & /* fd */,
-                             const hidl_vec<hidl_string> & /* options */) {
-    ALOGI("\n Weaver HAL MemoryLeak Info =  %s \n",
-          ::android::GetUnreachableMemoryString(true, 10000).c_str());
-    return Void();
   }
 }
 }

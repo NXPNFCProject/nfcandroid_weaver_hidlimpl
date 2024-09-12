@@ -33,6 +33,42 @@ license {
 }
 
 cc_binary {
+    relative_install_path: "hw",
+    name: "android.hardware.weaver@1.0-service.nxp",
+    init_rc: ["1.0/android.hardware.weaver@1.0-service.nxp.rc"],
+    vintf_fragments: ["1.0/android.hardware.weaver@1.0-service.nxp.xml"],
+    proprietary: true,
+    defaults: ["hidl_defaults"],
+    srcs: [
+        "1.0/WeaverService.cpp",
+        "1.0/Weaver.cpp",
+    ],
+
+    shared_libs: [
+        "android.hardware.weaver@1.0",
+        "ese_weaver.nxp",
+        "libcutils",
+        "libdl",
+        "libhardware",
+        "libhidlbase",
+        "liblog",
+        "libutils",
+        "libbinder_ndk",
+    ],
+
+    local_include_dirs: [
+        "libese_weaver/inc/"
+    ],
+
+    include_dirs: [
+    ],
+    cflags: [
+        "-Wall",
+        "-fexceptions",
+    ],
+}
+
+cc_binary {
     name: "android.hardware.weaver-service.nxp",
     relative_install_path: "hw",
     init_rc: ["aidl_impl/android.hardware.weaver-service.nxp.rc"],
