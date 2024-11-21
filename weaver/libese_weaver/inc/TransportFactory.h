@@ -30,24 +30,28 @@
  ** See the License for the specific language governing permissions and
  ** limitations under the License.
  **
- ** Copyright 2020-2023 NXP
+ ** Copyright 2020-2024 NXP
  **
  *********************************************************************************/
 
 #ifndef __SE_TRANSPORT_FACTORY__
 #define __SE_TRANSPORT_FACTORY__
 
-#include "HalToHalTransport.h"
+#ifdef OMAPI_TRANSPORT
 #include "OmapiTransport.h"
+#else
+#include "HalToHalTransport.h"
+#endif
 #include "SocketTransport.h"
 
 namespace se_transport {
 
-using keymint::javacard::HalToHalTransport;
 using keymint::javacard::ITransport;
 using keymint::javacard::SocketTransport;
 #ifdef OMAPI_TRANSPORT
 using keymint::javacard::OmapiTransport;
+#else
+using keymint::javacard::HalToHalTransport;
 #endif
 
 /**
@@ -59,14 +63,14 @@ class TransportFactory {
     TransportFactory(bool isEmulator, const std::vector<uint8_t>& mAppletAID) {
         if (!isEmulator) {
 #ifdef OMAPI_TRANSPORT
-            mTransport = std::unique_ptr<OmapiTransport>(new OmapiTransport(mAppletAID));
+            mTransport = OmapiTransport::make(mAppletAID);
 #else
-            mTransport = std::unique_ptr<HalToHalTransport>(new HalToHalTransport(mAppletAID));
+            mTransport = std::shared_ptr<HalToHalTransport>(new HalToHalTransport(mAppletAID));
 #endif
         }
 #ifndef NXP_EXTNS
         else
-            mTransport = std::unique_ptr<SocketTransport>(new SocketTransport(mAppletAID));
+            mTransport = std::shared_ptr<SocketTransport>(new SocketTransport(mAppletAID));
 #endif
     }
 
@@ -113,7 +117,7 @@ class TransportFactory {
     /**
      * Holds the instance of either OmapiTransport class or SocketTransport class.
      */
-    std::unique_ptr<ITransport> mTransport;
+    std::shared_ptr<ITransport> mTransport;
 
 };
 } // namespace se_transport

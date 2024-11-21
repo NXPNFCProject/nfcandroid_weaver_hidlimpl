@@ -45,6 +45,7 @@ cc_library_shared {
     ],
 
     shared_libs: [
+        "android.hardware.secure_element-V1-ndk",
         "android.se.omapi-V1-ndk",
         "libcutils",
         "libjc_keymint_transport.nxp",
