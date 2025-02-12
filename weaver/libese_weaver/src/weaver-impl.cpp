@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020, 2022-2023 NXP
+ *  Copyright 2020, 2022-2023, 2025 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -21,9 +21,23 @@
 #include <weaver_parser-impl.h>
 #include <weaver_transport-impl.h>
 #include <weaver_utils.h>
+#include <stdint.h>
 
 WeaverImpl *WeaverImpl::s_instance = NULL;
 std::once_flag WeaverImpl::s_instanceFlag;
+
+#define NXP_EN_SN110U 1
+#define NXP_EN_SN100U 1
+#define NXP_EN_SN220U 1
+#define NXP_EN_PN557 1
+#define NXP_EN_PN560 1
+#define NXP_EN_SN300U 1
+#define NXP_EN_SN330U 1
+#define NFC_NXP_MW_ANDROID_VER (16U)  /* Android version used by NFC MW */
+#define NFC_NXP_MW_VERSION_MAJ (0x03) /* MW Major Version */
+#define NFC_NXP_MW_VERSION_MIN (0x00) /* MW Minor Version */
+#define NFC_NXP_MW_CUSTOMER_ID (0x00) /* MW Customer Id */
+#define NFC_NXP_MW_RC_VERSION (0x00)  /* MW RC Version */
 
 /**
  * \brief static function to get the singleton instance of WeaverImpl class
@@ -38,11 +52,26 @@ WeaverImpl *WeaverImpl::getInstance() {
   return s_instance;
 }
 
+static void printWeaverVersion() {
+  uint32_t validation = (NXP_EN_SN100U << 13);
+  validation |= (NXP_EN_SN110U << 14);
+  validation |= (NXP_EN_SN220U << 15);
+  validation |= (NXP_EN_PN560 << 16);
+  validation |= (NXP_EN_SN300U << 17);
+  validation |= (NXP_EN_SN330U << 18);
+  validation |= (NXP_EN_PN557 << 11);
+
+  LOG_D(TAG,"Weaver Version: NXP_AR_%02X_%05X_%02d.%02x.%02x",
+        NFC_NXP_MW_CUSTOMER_ID, validation, NFC_NXP_MW_ANDROID_VER,
+        NFC_NXP_MW_VERSION_MAJ, NFC_NXP_MW_VERSION_MIN);
+}
+
 /* Private function to create the instance of self class
  * Same will be used for std::call_once
  */
 void WeaverImpl::createInstance() {
   LOG_D(TAG, "Entry");
+  printWeaverVersion();
   s_instance = new WeaverImpl;
 }
 
