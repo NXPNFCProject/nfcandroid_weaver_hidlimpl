@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2023 NXP
+ *  Copyright 2023, 2025 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -35,6 +35,8 @@ int main() {
     CHECK(status == STATUS_OK);
 
     ABinderProcess_joinThreadPool();
+  } catch (std::length_error& e) {
+    ALOGE("Length Exception occurred = %s ", e.what());
   } catch (std::__1::ios_base::failure &e) {
     ALOGE("ios failure Exception occurred = %s ", e.what());
   } catch (std::__1::system_error &e) {
