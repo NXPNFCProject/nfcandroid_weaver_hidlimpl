@@ -23,6 +23,7 @@
 #include <android/binder_manager.h>
 #include <android/binder_process.h>
 
+#include <algorithm>
 #include <chrono>
 #include <csignal>
 #include <future>
