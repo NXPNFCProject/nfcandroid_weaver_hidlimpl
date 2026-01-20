@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020, 2022-2023, 2025 NXP
+ *  Copyright 2020, 2022-2023, 2025-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -174,9 +174,13 @@ Status_Weaver WeaverImpl::Read(uint32_t slotId, const std::vector<uint8_t> &key,
     status = WEAVER_STATUS_OK;
   }
   if (status == WEAVER_STATUS_OK) {
-    status = mParser->ParseReadInfo(resp, readRespInfo);
-    if (status == WEAVER_STATUS_THROTTLE ||
-        status == WEAVER_STATUS_INCORRECT_KEY) {
+    // To check if Applet read response has throttle timeout value
+    bool supportsTimeout = false;
+
+    status = mParser->ParseReadInfo(resp, readRespInfo, &supportsTimeout);
+    if ((status == WEAVER_STATUS_THROTTLE ||
+         status == WEAVER_STATUS_INCORRECT_KEY) &&
+        !supportsTimeout) {
       cmd.clear();
       resp.clear();
       if (mParser->FrameGetDataCmd(WeaverParserImpl::sThrottleGetDataP1, (uint8_t)slotId, cmd) &&

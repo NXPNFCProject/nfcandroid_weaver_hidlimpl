@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020, 2022-2023, 2025 NXP
+ *  Copyright 2020, 2022-2023, 2025-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
  ******************************************************************************/
 
 #define LOG_TAG "weaver-parser-impl"
+
 #include <weaver_parser-impl.h>
 #include <weaver_utils.h>
 
@@ -45,6 +46,8 @@ std::once_flag WeaverParserImpl::s_instanceFlag;
 /* Supported Size by Applet */
 #define KEY_SIZE 16
 #define VALUE_SIZE 16
+#define THROTTLE_VALUE_SIZE 4
+#define FAILURE_COUNTER_SIZE 2
 #define RES_STATUS_SIZE 2
 
 /* For Applet Read Response TAG */
@@ -53,6 +56,15 @@ std::once_flag WeaverParserImpl::s_instanceFlag;
 #define READ_SUCCESS_TAG 0x00
 #define READ_ERR_CODE_INDEX 0 // Start index of above tag in read response
 #define READ_ERR_CODE_SIZE 1  // Size of above tag in read response
+#define READ_THROTTLE_TIMEOUT_INDEX 1
+#define READ_INCORRECT_KEY_FAILURE_COUNT_INDEX 5
+
+/* For Applet GetData response TAG */
+#define GETDATA_TAG_INDEX 0
+#define GETDATA_SLOT_INDEX 1
+#define GETDATA_LEN_INDEX 2
+#define GETDATA_THROTTLE_TIMEOUT_INDEX 3
+#define GETDATA_INCORRECT_KEY_FAILURE_COUNT_INDEX 7
 
 #define SLOT_ID_INDEX 0 // Index of slotId in getSlot response
 
@@ -254,13 +266,15 @@ Status_Weaver WeaverParserImpl::ParseSlotInfo(std::vector<uint8_t> response,
  *
  * \param[in]     response  - response from applet.
  * \param[out]    readInfo  - parsed read Information read out from applet
- * response.
+ * \param[out]    supportsTimeout - return true if read response contains
+ * timeout
  *
  * \retval This function return true in case of success
  *         In case of failure returns false.
  */
 Status_Weaver WeaverParserImpl::ParseReadInfo(std::vector<uint8_t> response,
-                                              ReadRespInfo &readInfo) {
+                                              ReadRespInfo &readInfo,
+                                              bool *readSupportsTimeout) {
   LOG_D(TAG, "Entry");
   Status_Weaver status = WEAVER_STATUS_FAILED;
   if (response.size() < RES_STATUS_SIZE) {
@@ -268,7 +282,7 @@ Status_Weaver WeaverParserImpl::ParseReadInfo(std::vector<uint8_t> response,
     return status;
   }
   if (isSuccess(response)) {
-    readInfo.timeout = 0; // Applet not supporting timeout value in read response
+    readInfo.timeout = 0;
     switch (response.at(READ_ERR_CODE_INDEX)) {
     case INCORRECT_KEY_TAG:
       LOG_E(TAG, "INCORRECT_KEY");
@@ -278,6 +292,14 @@ Status_Weaver WeaverParserImpl::ParseReadInfo(std::vector<uint8_t> response,
     case THROTTING_ENABLED_TAG:
       LOG_E(TAG, "THROTTING_ENABLED");
       status = WEAVER_STATUS_THROTTLE;
+      if (response.size() == READ_ERR_CODE_SIZE + THROTTLE_VALUE_SIZE +
+                                 FAILURE_COUNTER_SIZE + RES_STATUS_SIZE) {
+        readInfo.timeout = 1000 * toDecimalBigEndian<uint32_t>(
+                                      response, READ_THROTTLE_TIMEOUT_INDEX);
+        auto failure_count = toDecimalBigEndian<uint16_t>(
+            response, READ_INCORRECT_KEY_FAILURE_COUNT_INDEX);
+        *readSupportsTimeout = true;
+      }
       readInfo.value.resize(0);
       break;
     case READ_SUCCESS_TAG:
@@ -315,8 +337,14 @@ Status_Weaver WeaverParserImpl::ParseGetDataInfo(std::vector<uint8_t> response,
     GetDataRespInfo &getDataInfo) {
   LOG_D(TAG, "Entry");
   Status_Weaver status = WEAVER_STATUS_FAILED;
-  int remainingLen  = response.size();
-  if (remainingLen < RES_STATUS_SIZE) {
+  constexpr uint8_t EXPECTED_DATA_PAYLOAD_LEN =
+      sizeof(getDataInfo.timeout) + sizeof(getDataInfo.failure_count);
+
+  // total size for a valid response (Tag + Slot + Len + Payload + SWStatus)
+  constexpr size_t MIN_P1_RESPONSE_SIZE =
+      3 + EXPECTED_DATA_PAYLOAD_LEN + RES_STATUS_SIZE;
+
+  if (response.size() < RES_STATUS_SIZE) {
     LOG_E(TAG, "Exit Invalid Response Size");
     return status;
   }
@@ -324,44 +352,37 @@ Status_Weaver WeaverParserImpl::ParseGetDataInfo(std::vector<uint8_t> response,
     LOG_E(TAG, "Invalid Response code");
     return status;
   }
-  remainingLen -= RES_STATUS_SIZE;
-  uint8_t *readOffset = response.data();
-  /* remaining response should contains at least 1 byte for TAG value */
-  if (remainingLen < sizeof(uint8_t)) {
-    LOG_E(TAG, "Invalid get data response");
-    return status;
-  }
-  switch (*readOffset++) {
-    case sThrottleGetDataP1:
-      remainingLen--;
-      /* remaining response should contain at least 8 bytes of data
-       * where 1 byte for slot id, 1 byte for datasize, 4 bytes for timeout
-       * and 2 bytes for failure count */
-      if (remainingLen < ((2 * sizeof(uint8_t)) /* for slot id and datasize */
-            + sizeof(getDataInfo.timeout) + sizeof(getDataInfo.failure_count))) {
-        LOG_E(TAG, "Invalid get data response");
-        break;
-      }
-      readOffset++; // slot id value
-      remainingLen--;
-      /* datasize value should be 6 as 4 bytes for time out + 2 bytes for failure count */
-      if (*readOffset++ == (sizeof(getDataInfo.timeout) +
-            sizeof(getDataInfo.failure_count))) {
-        getDataInfo.timeout =  *readOffset++ << BYTE1_MSB_POS;
-        getDataInfo.timeout |= *readOffset++ << BYTE2_MSB_POS;
-        getDataInfo.timeout |= *readOffset++ << BYTE3_MSB_POS;
-        getDataInfo.timeout |= *readOffset++;
-        getDataInfo.failure_count = *readOffset++ << BYTE3_MSB_POS;
-        getDataInfo.failure_count |= *readOffset;
-        LOG_D(TAG, "THROTTLE timeout (%u) Sec, Failure Count : (%u)", getDataInfo.timeout,
-            getDataInfo.failure_count);
-        status = WEAVER_STATUS_OK;
-      } else {
-        LOG_D(TAG, "Invalid data length in GET THROTTLE DATA response");
-      }
+
+  // Access the Tag (first byte)
+  uint8_t tag = response[GETDATA_TAG_INDEX];
+
+  switch (tag) {
+  case sThrottleGetDataP1:
+    // 1. Validate total length for this specific TAG case
+    if (response.size() < MIN_P1_RESPONSE_SIZE) {
+      LOG_E(TAG, "Invalid get data response length");
       break;
-    default:
-      LOG_D(TAG, "Invalid get data response TAG");
+    }
+    // 2. Validate internal 'datasize' field
+    if (response[GETDATA_LEN_INDEX] == EXPECTED_DATA_PAYLOAD_LEN) {
+      // convert into millisecs
+      getDataInfo.timeout =
+          1000 * toDecimalBigEndian<uint32_t>(response,
+                                              GETDATA_THROTTLE_TIMEOUT_INDEX);
+      getDataInfo.failure_count = toDecimalBigEndian<uint16_t>(
+          response, GETDATA_INCORRECT_KEY_FAILURE_COUNT_INDEX);
+
+      LOG_D(TAG, "THROTTLE timeout (%u) Sec, Failure Count : (%u)",
+            getDataInfo.timeout, getDataInfo.failure_count);
+
+      status = WEAVER_STATUS_OK;
+    } else {
+      LOG_D(TAG, "Invalid data length in GET THROTTLE DATA response");
+    }
+
+    break;
+  default:
+    LOG_D(TAG, "Invalid get data response TAG");
   }
   return status;
 }

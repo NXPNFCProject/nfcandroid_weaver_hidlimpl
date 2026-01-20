@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020, 2023 NXP
+ *  Copyright 2020, 2023, 2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -103,12 +103,14 @@ public:
    * \param[in]     response  - response from applet.
    * \param[out]    readInfo  - parsed read Information read out from applet
    * response.
+   * \param[out]    supportsTimeout  - true if resp contains timeout value
    *
    * \retval This function return true in case of success
    *         In case of failure returns false.
    */
   virtual Status_Weaver ParseReadInfo(std::vector<uint8_t> response,
-                                      ReadRespInfo &readInfo) = 0;
+                                      ReadRespInfo &readInfo,
+                                      bool *supportsTimeout) = 0;
 
   /**
    * \brief virtual Function to Parse get data response
