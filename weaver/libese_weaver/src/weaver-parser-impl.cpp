@@ -281,24 +281,35 @@ Status_Weaver WeaverParserImpl::ParseReadInfo(std::vector<uint8_t> response,
     LOG_E(TAG, "Exit Invalid Response Size");
     return status;
   }
+  constexpr size_t kRespWithThrottleValueSize =
+      READ_ERR_CODE_SIZE + THROTTLE_VALUE_SIZE + FAILURE_COUNTER_SIZE +
+      RES_STATUS_SIZE;
   if (isSuccess(response)) {
     readInfo.timeout = 0;
     switch (response.at(READ_ERR_CODE_INDEX)) {
     case INCORRECT_KEY_TAG:
       LOG_E(TAG, "INCORRECT_KEY");
       status = WEAVER_STATUS_INCORRECT_KEY;
+      if (response.size() == kRespWithThrottleValueSize) {
+        auto failure_count = toDecimalBigEndian<uint16_t>(
+            response, READ_INCORRECT_KEY_FAILURE_COUNT_INDEX);
+        *readSupportsTimeout = true;
+        LOG_D(TAG, "Failure Count : (%u)", failure_count);
+      }
       readInfo.value.resize(0);
       break;
     case THROTTING_ENABLED_TAG:
       LOG_E(TAG, "THROTTING_ENABLED");
       status = WEAVER_STATUS_THROTTLE;
-      if (response.size() == READ_ERR_CODE_SIZE + THROTTLE_VALUE_SIZE +
-                                 FAILURE_COUNTER_SIZE + RES_STATUS_SIZE) {
+      if (response.size() == kRespWithThrottleValueSize) {
+        // convert to millisecs
         readInfo.timeout = 1000 * toDecimalBigEndian<uint32_t>(
                                       response, READ_THROTTLE_TIMEOUT_INDEX);
         auto failure_count = toDecimalBigEndian<uint16_t>(
             response, READ_INCORRECT_KEY_FAILURE_COUNT_INDEX);
         *readSupportsTimeout = true;
+        LOG_D(TAG, "THROTTLE timeout (%u) Sec, Failure Count : (%u)",
+              readInfo.timeout / 1000, failure_count);
       }
       readInfo.value.resize(0);
       break;
