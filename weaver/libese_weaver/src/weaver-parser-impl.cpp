@@ -365,10 +365,9 @@ Status_Weaver WeaverParserImpl::ParseGetDataInfo(std::vector<uint8_t> response,
     }
     // 2. Validate internal 'datasize' field
     if (response[GETDATA_LEN_INDEX] == EXPECTED_DATA_PAYLOAD_LEN) {
-      // convert into millisecs
-      getDataInfo.timeout =
-          1000 * toDecimalBigEndian<uint32_t>(response,
-                                              GETDATA_THROTTLE_TIMEOUT_INDEX);
+
+      getDataInfo.timeout = toDecimalBigEndian<uint32_t>(
+          response, GETDATA_THROTTLE_TIMEOUT_INDEX);
       getDataInfo.failure_count = toDecimalBigEndian<uint16_t>(
           response, GETDATA_INCORRECT_KEY_FAILURE_COUNT_INDEX);
 
