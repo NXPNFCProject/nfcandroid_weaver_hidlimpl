@@ -36,11 +36,11 @@ int main() {
 
     ABinderProcess_joinThreadPool();
   } catch (std::length_error& e) {
-    ALOGE("Length Exception occurred = %s ", e.what());
-  } catch (std::__1::ios_base::failure &e) {
-    ALOGE("ios failure Exception occurred = %s ", e.what());
-  } catch (std::__1::system_error &e) {
-    ALOGE("system error Exception occurred = %s ", e.what());
+      ALOGE("Length Exception occurred = %s ", e.what());
+  } catch (std::__1::ios_base::failure& e) {
+      ALOGE("ios failure Exception occurred = %s ", e.what());
+  } catch (std::__1::system_error& e) {
+      ALOGE("system error Exception occurred = %s ", e.what());
   }
   return -1; // Should never be reached
 }

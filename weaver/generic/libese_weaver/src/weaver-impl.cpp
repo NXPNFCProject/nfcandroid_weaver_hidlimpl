@@ -17,11 +17,11 @@
  ******************************************************************************/
 
 #define LOG_TAG "weaver-impl"
+#include <stdint.h>
 #include <weaver-impl.h>
 #include <weaver_parser-impl.h>
 #include <weaver_transport-impl.h>
 #include <weaver_utils.h>
-#include <stdint.h>
 
 WeaverImpl *WeaverImpl::s_instance = NULL;
 std::once_flag WeaverImpl::s_instanceFlag;
@@ -53,17 +53,16 @@ WeaverImpl *WeaverImpl::getInstance() {
 }
 
 static void printWeaverVersion() {
-  uint32_t validation = (NXP_EN_SN100U << 13);
-  validation |= (NXP_EN_SN110U << 14);
-  validation |= (NXP_EN_SN220U << 15);
-  validation |= (NXP_EN_PN560 << 16);
-  validation |= (NXP_EN_SN300U << 17);
-  validation |= (NXP_EN_SN330U << 18);
-  validation |= (NXP_EN_PN557 << 11);
+    uint32_t validation = (NXP_EN_SN100U << 13);
+    validation |= (NXP_EN_SN110U << 14);
+    validation |= (NXP_EN_SN220U << 15);
+    validation |= (NXP_EN_PN560 << 16);
+    validation |= (NXP_EN_SN300U << 17);
+    validation |= (NXP_EN_SN330U << 18);
+    validation |= (NXP_EN_PN557 << 11);
 
-  LOG_D(TAG,"Weaver Version: NXP_AR_%02X_%05X_%02d.%02x.%02x",
-        NFC_NXP_MW_CUSTOMER_ID, validation, NFC_NXP_MW_ANDROID_VER,
-        NFC_NXP_MW_VERSION_MAJ, NFC_NXP_MW_VERSION_MIN);
+    LOG_D(TAG, "Weaver Version: NXP_AR_%02X_%05X_%02d.%02x.%02x", NFC_NXP_MW_CUSTOMER_ID,
+          validation, NFC_NXP_MW_ANDROID_VER, NFC_NXP_MW_VERSION_MAJ, NFC_NXP_MW_VERSION_MIN);
 }
 
 /* Private function to create the instance of self class
