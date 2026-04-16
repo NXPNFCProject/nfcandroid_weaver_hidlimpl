@@ -173,27 +173,28 @@ Status_Weaver WeaverImpl::Read(uint32_t slotId, const std::vector<uint8_t> &key,
     status = WEAVER_STATUS_OK;
   }
   if (status == WEAVER_STATUS_OK) {
-    // To check if Applet read response has throttle timeout value
-    bool supportsTimeout = false;
+      // To check if Applet read response has throttle timeout value
+      bool respHasTimeout = false;
 
-    status = mParser->ParseReadInfo(resp, readRespInfo, &supportsTimeout);
-    if ((status == WEAVER_STATUS_THROTTLE ||
-         status == WEAVER_STATUS_INCORRECT_KEY) &&
-        !supportsTimeout) {
-      cmd.clear();
-      resp.clear();
-      if (mParser->FrameGetDataCmd(WeaverParserImpl::sThrottleGetDataP1, (uint8_t)slotId, cmd) &&
-          (mTransport->Send(cmd, resp))) {
-        GetDataRespInfo getDataInfo;
-        if (mParser->ParseGetDataInfo(std::move(resp), getDataInfo) == WEAVER_STATUS_OK) {
-          /* convert timeout from getDataInfo sec to millisecond assign same to read response */
-          readRespInfo.timeout = (getDataInfo.timeout * 1000);
-          if (getDataInfo.timeout > 0) {
-            status = WEAVER_STATUS_THROTTLE;
+      status = mParser->ParseReadInfo(resp, readRespInfo, &respHasTimeout);
+      if ((status == WEAVER_STATUS_THROTTLE || status == WEAVER_STATUS_INCORRECT_KEY) &&
+          !respHasTimeout) {
+          cmd.clear();
+          resp.clear();
+          if (mParser->FrameGetDataCmd(WeaverParserImpl::sThrottleGetDataP1, (uint8_t)slotId,
+                                       cmd) &&
+              (mTransport->Send(cmd, resp))) {
+              GetDataRespInfo getDataInfo;
+              if (mParser->ParseGetDataInfo(std::move(resp), getDataInfo) == WEAVER_STATUS_OK) {
+                  /* convert timeout from getDataInfo sec to millisecond assign same to read
+                   * response */
+                  readRespInfo.timeout = (getDataInfo.timeout * 1000);
+                  if (getDataInfo.timeout > 0) {
+                      status = WEAVER_STATUS_THROTTLE;
+                  }
+              }
           }
-        }
       }
-    }
   } else {
     LOG_E(TAG, "Failed to perform Read Request for slot (%u)", slotId);
   }

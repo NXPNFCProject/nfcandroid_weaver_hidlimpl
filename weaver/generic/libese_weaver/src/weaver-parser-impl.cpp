@@ -267,72 +267,69 @@ Status_Weaver WeaverParserImpl::ParseSlotInfo(std::vector<uint8_t> response,
  *
  * \param[in]     response  - response from applet.
  * \param[out]    readInfo  - parsed read Information read out from applet
- * \param[out]    supportsTimeout - return true if read response contains
+ * \param[out]    respHasTimeout - return true if read response contains
  * timeout
  *
  * \retval This function return true in case of success
  *         In case of failure returns false.
  */
-Status_Weaver WeaverParserImpl::ParseReadInfo(std::vector<uint8_t> response,
-                                              ReadRespInfo &readInfo,
-                                              bool *readSupportsTimeout) {
-  LOG_D(TAG, "Entry");
-  Status_Weaver status = WEAVER_STATUS_FAILED;
-  if (response.size() < RES_STATUS_SIZE) {
-    LOG_E(TAG, "Exit Invalid Response Size");
-    return status;
-  }
-  constexpr size_t kRespWithThrottleValueSize =
-      READ_ERR_CODE_SIZE + THROTTLE_VALUE_SIZE + FAILURE_COUNTER_SIZE +
-      RES_STATUS_SIZE;
-  if (isSuccess(response)) {
-    readInfo.timeout = 0;
-    switch (response.at(READ_ERR_CODE_INDEX)) {
-    case INCORRECT_KEY_TAG:
-      LOG_E(TAG, "INCORRECT_KEY");
-      status = WEAVER_STATUS_INCORRECT_KEY;
-      if (response.size() == kRespWithThrottleValueSize) {
-        auto failure_count = toDecimalBigEndian<uint16_t>(
-            response, READ_INCORRECT_KEY_FAILURE_COUNT_INDEX);
-        *readSupportsTimeout = true;
-        LOG_D(TAG, "Failure Count : (%u)", failure_count);
-      }
-      readInfo.value.resize(0);
-      break;
-    case THROTTING_ENABLED_TAG:
-      LOG_E(TAG, "THROTTING_ENABLED");
-      status = WEAVER_STATUS_THROTTLE;
-      if (response.size() == kRespWithThrottleValueSize) {
-        // convert to millisecs
-        readInfo.timeout = 1000 * toDecimalBigEndian<uint32_t>(
-                                      response, READ_THROTTLE_TIMEOUT_INDEX);
-        auto failure_count = toDecimalBigEndian<uint16_t>(
-            response, READ_INCORRECT_KEY_FAILURE_COUNT_INDEX);
-        *readSupportsTimeout = true;
-        LOG_D(TAG, "THROTTLE timeout (%u) Sec, Failure Count : (%u)",
-              readInfo.timeout / 1000, failure_count);
-      }
-      readInfo.value.resize(0);
-      break;
-    case READ_SUCCESS_TAG:
-      if ((VALUE_SIZE + READ_ERR_CODE_SIZE + RES_STATUS_SIZE) ==
-          response.size()) {
-        LOG_D(TAG, "SUCCESS");
-        readInfo.value.clear();
-        readInfo.value.insert(std::end(readInfo.value),
-                              std::begin(response) + READ_ERR_CODE_SIZE,
-                              std::end(response) - RES_STATUS_SIZE);
-        status = WEAVER_STATUS_OK;
-      } else {
-        LOG_E(TAG, "Invalid Response");
-      }
-      break;
-    default:
-      LOG_E(TAG, "Unknown Tag for Read Response");
+Status_Weaver WeaverParserImpl::ParseReadInfo(std::vector<uint8_t> response, ReadRespInfo& readInfo,
+                                              bool* respHasTimeout) {
+    LOG_D(TAG, "Entry");
+    Status_Weaver status = WEAVER_STATUS_FAILED;
+    if (response.size() < RES_STATUS_SIZE) {
+        LOG_E(TAG, "Exit Invalid Response Size");
+        return status;
     }
-  }
-  LOG_D(TAG, "Exit");
-  return status;
+    constexpr size_t kRespWithThrottleValueSize =
+        READ_ERR_CODE_SIZE + THROTTLE_VALUE_SIZE + FAILURE_COUNTER_SIZE + RES_STATUS_SIZE;
+    if (isSuccess(response)) {
+        readInfo.timeout = 0;
+        switch (response.at(READ_ERR_CODE_INDEX)) {
+            case INCORRECT_KEY_TAG:
+                LOG_E(TAG, "INCORRECT_KEY");
+                status = WEAVER_STATUS_INCORRECT_KEY;
+                if (response.size() == kRespWithThrottleValueSize) {
+                    auto failure_count = toDecimalBigEndian<uint16_t>(
+                        response, READ_INCORRECT_KEY_FAILURE_COUNT_INDEX);
+                    *respHasTimeout = true;
+                    LOG_D(TAG, "Failure Count : (%u)", failure_count);
+                }
+                readInfo.value.resize(0);
+                break;
+            case THROTTING_ENABLED_TAG:
+                LOG_E(TAG, "THROTTING_ENABLED");
+                status = WEAVER_STATUS_THROTTLE;
+                if (response.size() == kRespWithThrottleValueSize) {
+                    // convert to millisecs
+                    readInfo.timeout =
+                        1000 * toDecimalBigEndian<uint32_t>(response, READ_THROTTLE_TIMEOUT_INDEX);
+                    auto failure_count = toDecimalBigEndian<uint16_t>(
+                        response, READ_INCORRECT_KEY_FAILURE_COUNT_INDEX);
+                    *respHasTimeout = true;
+                    LOG_D(TAG, "THROTTLE timeout (%u) Sec, Failure Count : (%u)",
+                          readInfo.timeout / 1000, failure_count);
+                }
+                readInfo.value.resize(0);
+                break;
+            case READ_SUCCESS_TAG:
+                if ((VALUE_SIZE + READ_ERR_CODE_SIZE + RES_STATUS_SIZE) == response.size()) {
+                    LOG_D(TAG, "SUCCESS");
+                    readInfo.value.clear();
+                    readInfo.value.insert(std::end(readInfo.value),
+                                          std::begin(response) + READ_ERR_CODE_SIZE,
+                                          std::end(response) - RES_STATUS_SIZE);
+                    status = WEAVER_STATUS_OK;
+                } else {
+                    LOG_E(TAG, "Invalid Response");
+                }
+                break;
+            default:
+                LOG_E(TAG, "Unknown Tag for Read Response");
+        }
+    }
+    LOG_D(TAG, "Exit");
+    return status;
 }
 
 /**
@@ -353,12 +350,11 @@ Status_Weaver WeaverParserImpl::ParseGetDataInfo(std::vector<uint8_t> response,
       sizeof(getDataInfo.timeout) + sizeof(getDataInfo.failure_count);
 
   // total size for a valid response (Tag + Slot + Len + Payload + SWStatus)
-  constexpr size_t MIN_P1_RESPONSE_SIZE =
-      3 + EXPECTED_DATA_PAYLOAD_LEN + RES_STATUS_SIZE;
+  constexpr size_t MIN_P1_RESPONSE_SIZE = 3 + EXPECTED_DATA_PAYLOAD_LEN + RES_STATUS_SIZE;
 
   if (response.size() < RES_STATUS_SIZE) {
-    LOG_E(TAG, "Exit Invalid Response Size");
-    return status;
+      LOG_E(TAG, "Exit Invalid Response Size");
+      return status;
   }
   if (!isSuccess(response)) {
     LOG_E(TAG, "Invalid Response code");
@@ -369,31 +365,30 @@ Status_Weaver WeaverParserImpl::ParseGetDataInfo(std::vector<uint8_t> response,
   uint8_t tag = response[GETDATA_TAG_INDEX];
 
   switch (tag) {
-  case sThrottleGetDataP1:
-    // 1. Validate total length for this specific TAG case
-    if (response.size() < MIN_P1_RESPONSE_SIZE) {
-      LOG_E(TAG, "Invalid get data response length");
-      break;
-    }
-    // 2. Validate internal 'datasize' field
-    if (response[GETDATA_LEN_INDEX] == EXPECTED_DATA_PAYLOAD_LEN) {
+      case sThrottleGetDataP1:
+          // 1. Validate total length for this specific TAG case
+          if (response.size() < MIN_P1_RESPONSE_SIZE) {
+              LOG_E(TAG, "Invalid get data response length");
+              break;
+          }
+          // 2. Validate internal 'datasize' field
+          if (response[GETDATA_LEN_INDEX] == EXPECTED_DATA_PAYLOAD_LEN) {
+              getDataInfo.timeout =
+                  toDecimalBigEndian<uint32_t>(response, GETDATA_THROTTLE_TIMEOUT_INDEX);
+              getDataInfo.failure_count =
+                  toDecimalBigEndian<uint16_t>(response, GETDATA_INCORRECT_KEY_FAILURE_COUNT_INDEX);
 
-      getDataInfo.timeout = toDecimalBigEndian<uint32_t>(
-          response, GETDATA_THROTTLE_TIMEOUT_INDEX);
-      getDataInfo.failure_count = toDecimalBigEndian<uint16_t>(
-          response, GETDATA_INCORRECT_KEY_FAILURE_COUNT_INDEX);
+              LOG_D(TAG, "THROTTLE timeout (%u) Sec, Failure Count : (%u)", getDataInfo.timeout,
+                    getDataInfo.failure_count);
 
-      LOG_D(TAG, "THROTTLE timeout (%u) Sec, Failure Count : (%u)",
-            getDataInfo.timeout, getDataInfo.failure_count);
+              status = WEAVER_STATUS_OK;
+          } else {
+              LOG_D(TAG, "Invalid data length in GET THROTTLE DATA response");
+          }
 
-      status = WEAVER_STATUS_OK;
-    } else {
-      LOG_D(TAG, "Invalid data length in GET THROTTLE DATA response");
-    }
-
-    break;
-  default:
-    LOG_D(TAG, "Invalid get data response TAG");
+          break;
+      default:
+          LOG_D(TAG, "Invalid get data response TAG");
   }
   return status;
 }

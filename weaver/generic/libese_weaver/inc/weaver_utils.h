@@ -48,20 +48,19 @@ static bool is_weaver_debug =
 // Helper function to convert sequence of bytes to integral value
 
 template <typename T>
-T toDecimalBigEndian(const std::vector<uint8_t> &data, size_t startIndex) {
+T toDecimalBigEndian(const std::vector<uint8_t>& data, size_t startIndex) {
+    static_assert(std::is_integral_v<T>, "T must be an integral type.");
 
-  static_assert(std::is_integral_v<T>, "T must be an integral type.");
+    if (startIndex + sizeof(T) > data.size()) {
+        LOG_E(TAG, "Vector too small for the requested type.");
+        return 0;
+    }
 
-  if (startIndex + sizeof(T) > data.size()) {
-    LOG_E(TAG, "Vector too small for the requested type.");
-    return 0;
-  }
+    T value = 0;
+    for (size_t i = 0; i < sizeof(T); ++i) {
+        value = (value << 8) | static_cast<T>(data[startIndex + i]);
+    }
 
-  T value = 0;
-  for (size_t i = 0; i < sizeof(T); ++i) {
-    value = (value << 8) | static_cast<T>(data[startIndex + i]);
-  }
-
-  return value;
+    return value;
 }
 #endif /* _WEAVER_UTILS_H__ */

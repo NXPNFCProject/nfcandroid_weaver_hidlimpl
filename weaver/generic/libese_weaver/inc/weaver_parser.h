@@ -103,14 +103,13 @@ public:
    * \param[in]     response  - response from applet.
    * \param[out]    readInfo  - parsed read Information read out from applet
    * response.
-   * \param[out]    supportsTimeout  - true if resp contains timeout value
+   * \param[out]    respHasTimeout  - true if resp contains timeout value
    *
    * \retval This function return true in case of success
    *         In case of failure returns false.
    */
-  virtual Status_Weaver ParseReadInfo(std::vector<uint8_t> response,
-                                      ReadRespInfo &readInfo,
-                                      bool *supportsTimeout) = 0;
+  virtual Status_Weaver ParseReadInfo(std::vector<uint8_t> response, ReadRespInfo& readInfo,
+                                      bool* respHasTimeout) = 0;
 
   /**
    * \brief virtual Function to Parse get data response
