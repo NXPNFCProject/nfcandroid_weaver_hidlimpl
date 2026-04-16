@@ -57,7 +57,7 @@ cc_binary {
     ],
 
     local_include_dirs: [
-        "libese_weaver/inc/"
+        "libese_weaver/inc/",
     ],
 
     include_dirs: [
