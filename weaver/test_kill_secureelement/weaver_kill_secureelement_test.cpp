@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2025-2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,13 +46,16 @@ static bool RunCommand(const std::string& command, std::string& stdout_str) {
         PLOG(ERROR) << "Failed to popen command: " << command;
         return false;
     }
-
+    bool read_ok = true;
     if (!android::base::ReadFdToString(fileno(pipe), &stdout_str)) {
         LOG(ERROR) << "Failed to read command output.";
-        return false;
+        read_ok = false;
     }
 
     int status = pclose(pipe);
+    if (!read_ok) {
+        return read_ok;
+    }
     return WIFEXITED(status) && WEXITSTATUS(status) == 0;
 }
 
