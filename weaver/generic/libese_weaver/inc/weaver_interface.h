@@ -20,6 +20,8 @@
 #define _WEAVER_INTERFACE_H_
 
 #include <weaver_common.h>
+#include <chrono>
+#include <optional>
 
 class WeaverInterface {
 public:
@@ -71,6 +73,24 @@ public:
    *         In case of failure returns other Status_Weaver.
    */
   virtual Status_Weaver DeInit() = 0;
+
+  /**
+   * \brief Function to  get throttle timeout for slot
+   * \param[in]    slotId -   slotId to read timeout value of
+   * \param[out]   throttleTimeoutValue - timeout value for given slotId
+   *
+   * \retval Weaver_STATUS_OK (0) in case of success
+   *         In case of failure returns other Status_Weaver.
+   */
+  virtual Status_Weaver getSlotThrottleValue(uint32_t slotId, int64_t *throttleTimeoutValue) = 0;
+
+  /**
+   * \brief Function to set timeout value for current session
+   * \param[in]    value - timeout value in millisec
+   *
+   * \retval None
+   */
+  virtual void setSessionTimeoutValue(std::optional<std::chrono::milliseconds> value) = 0;
 
   /**
    * \brief virtual destructor for Weaver Interface

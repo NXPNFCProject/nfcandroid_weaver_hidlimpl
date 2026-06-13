@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2023,2026 NXP
+ *  Copyright 2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,10 +18,9 @@
 #pragma once
 
 #include <aidl/android/hardware/weaver/BnWeaver.h>
+#include "WeaverCore.h"
 #include <weaver-impl.h>
 #include <weaver_interface.h>
-
-#include <chrono>
 
 namespace aidl {
 namespace android {
@@ -32,25 +31,25 @@ using ::aidl::android::hardware::weaver::WeaverConfig;
 using ::aidl::android::hardware::weaver::WeaverReadResponse;
 using ::ndk::ScopedAStatus;
 using std::vector;
+using WeaverCore = ::aidl::android::hardware::weaver::WeaverCore;
 
-// Recommended idle timeout value for warmUp
-constexpr std::chrono::milliseconds WARMUP_IDLE_TIMEOUT_VALUE{5000};
+struct Weaver3 : public BnWeaver {
+public:
+  Weaver3() : weaverImpl_(std::make_shared<WeaverCore>()) {};
+  // Methods from ::android::hardware::weaver::IWeaver follow.
+  ScopedAStatus getConfig(WeaverConfig *_aidl_return) override;
+  ScopedAStatus read(int32_t in_slotId, const vector<uint8_t> &in_key,
+                     WeaverReadResponse *_aidl_return) override;
+  ScopedAStatus write(int32_t in_slotId, const vector<uint8_t> &in_key,
+                      const vector<uint8_t> &in_value) override;
+  ScopedAStatus warmUp() override;
+  ScopedAStatus getTimeout(int32_t in_slotId, int64_t* _aidl_return) override;
 
-struct WeaverCore {
- public:
-  WeaverCore();
-  ScopedAStatus getConfig(WeaverConfig* _aidl_return);
-  ScopedAStatus read(int32_t in_slotId, const vector<uint8_t>& in_key,
-                     WeaverReadResponse* _aidl_return);
-  ScopedAStatus write(int32_t in_slotId, const vector<uint8_t>& in_key,
-                      const vector<uint8_t>& in_value);
-  ScopedAStatus warmUp();
-  ScopedAStatus getTimeout(int32_t in_slotId, int64_t* _aidl_return);
- private:
-  WeaverInterface* pInterface = nullptr;
+private:
+  std::shared_ptr<WeaverCore> weaverImpl_;
 };
 
-}  // namespace weaver
-}  // namespace hardware
-}  // namespace android
-}  // namespace aidl
+} // namespace weaver
+} // namespace hardware
+} // namespace android
+} // namespace aidl

@@ -74,6 +74,14 @@ public:
   bool DeInit() override;
 
   /**
+   * \brief Function to set timeout value for Applet's current session
+   * \param[in]    value - timeout value in millisec
+   *
+   * \retval None
+   */
+  void setAppletSessionTimeoutValue(std::optional<std::chrono::milliseconds> duration) override;
+
+  /**
    * \brief static function to get the singleton instance of WeaverTransportImpl
    * class
    *

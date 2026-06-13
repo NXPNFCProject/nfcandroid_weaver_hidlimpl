@@ -145,6 +145,28 @@ ScopedAStatus WeaverCore::write(int32_t in_slotId,
   }
 }
 
+ScopedAStatus WeaverCore::warmUp() {
+    ALOGI("warmup");
+
+    pInterface->setSessionTimeoutValue(WARMUP_IDLE_TIMEOUT_VALUE);
+
+    // Reusing getConfig() to open the session/channel
+    WeaverConfig out_config;
+    auto status = getConfig(&out_config);
+
+    // let transport layer use the default timeout value
+    pInterface->setSessionTimeoutValue(std::nullopt);
+    return status;
+}
+
+ScopedAStatus WeaverCore::getTimeout(int32_t in_slotId, int64_t* _aidl_return) {
+
+    if(pInterface->getSlotThrottleValue(in_slotId, _aidl_return) != WEAVER_STATUS_OK) {
+      return ScopedAStatus::fromExceptionCode(EX_ILLEGAL_ARGUMENT);
+    }
+    return ScopedAStatus::ok();
+}
+
 }  // namespace weaver
 }  // namespace hardware
 }  // namespace android

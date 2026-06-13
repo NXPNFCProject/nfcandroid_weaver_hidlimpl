@@ -43,6 +43,8 @@
 #include "HalToHalTransport.h"
 #endif
 #include "SocketTransport.h"
+#include <chrono>
+#include <optional>
 
 namespace se_transport {
 
@@ -111,6 +113,13 @@ class TransportFactory {
      */
     inline bool isConnected() {
         return mTransport->isConnected();
+    }
+
+    /**
+     * Sets timeout value for idle session timer.
+     */
+    inline void configureSessionTimeout(std::optional<std::chrono::milliseconds> timeout) {
+        return mTransport->configureSessionTimeout(timeout);
     }
 
     private:

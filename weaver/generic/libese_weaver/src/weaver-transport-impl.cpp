@@ -21,6 +21,8 @@
 #include <vector>
 #include <weaver_transport-impl.h>
 #include <weaver_utils.h>
+#include <chrono>
+#include <optional>
 
 #define MAX_RETRY_COUNT 12
 #define RETRY_DELAY_INTERVAL_SEC 1
@@ -158,6 +160,9 @@ bool WeaverTransportImpl::sendInternal(std::vector<uint8_t> data,
   return status;
 }
 
+void WeaverTransportImpl::setAppletSessionTimeoutValue(std::optional<std::chrono::milliseconds> duration) {
+  getTransportFactoryInstance()->configureSessionTimeout(duration);
+}
 /**
  * \brief Function to send commands to applet
  *

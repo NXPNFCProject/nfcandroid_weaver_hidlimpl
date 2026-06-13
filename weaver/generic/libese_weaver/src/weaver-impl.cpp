@@ -22,6 +22,7 @@
 #include <weaver_parser-impl.h>
 #include <weaver_transport-impl.h>
 #include <weaver_utils.h>
+#include <chrono>
 
 WeaverImpl *WeaverImpl::s_instance = NULL;
 std::once_flag WeaverImpl::s_instanceFlag;
@@ -260,4 +261,27 @@ Status_Weaver WeaverImpl::DeInit() {
   }
   LOG_D(TAG, "Exit");
   return WEAVER_STATUS_OK;
+}
+
+Status_Weaver WeaverImpl::getSlotThrottleValue(uint32_t slotId, int64_t *throttleTimeoutValue) {
+  Status_Weaver status = WEAVER_STATUS_FAILED;
+  std::vector<uint8_t> cmd;
+  std::vector<uint8_t> resp;
+    if (mParser->FrameGetDataCmd(WeaverParserImpl::sThrottleGetDataP1, (uint8_t)slotId,
+                                       cmd) &&
+              (mTransport->Send(cmd, resp))) {
+              GetDataRespInfo getDataInfo;
+              status = mParser->ParseGetDataInfo(std::move(resp), getDataInfo);
+              if ( status == WEAVER_STATUS_OK) {
+                  /* convert timeout from getDataInfo sec to millisecond assign same to read
+                   * response */
+                  *throttleTimeoutValue = (getDataInfo.timeout * 1000);
+              }
+      } else {
+        LOG_E(TAG, "Failed to fetch throttle value using getDataCmd");
+      }
+      return status;
+}
+void WeaverImpl::setSessionTimeoutValue(std::optional<std::chrono::milliseconds> value) {
+  mTransport->setAppletSessionTimeoutValue(value);
 }

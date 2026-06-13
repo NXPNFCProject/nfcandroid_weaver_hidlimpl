@@ -94,6 +94,24 @@ cc_binary {
     ],
 }
 
+cc_binary {
+    name: "android.hardware.weaver3-service.nxp",
+    defaults: [
+        "jc_weaver_defaults.nxp",
+    ],
+
+    init_rc: ["aidl_impl/android.hardware.weaver3-service.nxp.rc"],
+    vintf_fragments: ["aidl_impl/android.hardware.weaver3-service.nxp.xml"],
+    srcs: [
+        "aidl_impl/Weaver3Service.cpp",
+        "aidl_impl/Weaver3.cpp",
+    ],
+
+    shared_libs: [
+        "android.hardware.weaver-V3-ndk",
+    ],
+}
+
 cc_defaults {
     name: "jc_weaver_defaults.nxp",
     relative_install_path: "hw",

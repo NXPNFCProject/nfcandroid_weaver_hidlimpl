@@ -20,6 +20,8 @@
 #define _WEAVER_TRANSPORT_H_
 
 #include <vector>
+#include <chrono>
+#include <optional>
 
 class WeaverTransport {
 public:
@@ -64,6 +66,13 @@ public:
    */
   virtual bool Send(std::vector<uint8_t> data, std::vector<uint8_t> &resp) = 0;
 
+  /**
+   * \brief Function to set timeout value for current session
+   * \param[in]    value - timeout value in millisec
+   *
+   * \retval None
+   */
+  virtual void setAppletSessionTimeoutValue(std::optional<std::chrono::milliseconds> duration) = 0;
   /**
    * \brief virtual Function to de-initialize Weaver Transport Interface
    *

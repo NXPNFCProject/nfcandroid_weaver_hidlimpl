@@ -23,6 +23,8 @@
 #include <weaver_interface.h>
 #include <weaver_parser.h>
 #include <weaver_transport.h>
+#include <chrono>
+#include <optional>
 
 class WeaverImpl : public WeaverInterface {
 public:
@@ -66,6 +68,24 @@ public:
    */
   Status_Weaver Write(uint32_t slotId, const std::vector<uint8_t> &key,
                       const std::vector<uint8_t> &value) override;
+
+  /**
+   * \brief Function to  get throttle timeout for slot
+   * \param[in]    slotId -   slotId to read timeout value of
+   * \param[out]   throttleTimeoutValue - timeout value for given slotId
+   *
+   * \retval Weaver_STATUS_OK (0) in case of success
+   *         In case of failure returns other Status_Weaver.
+   */
+  virtual Status_Weaver getSlotThrottleValue(uint32_t slotId, int64_t *throttleTimeoutValue) override;
+
+  /**
+   * \brief Function to set timeout value for current session
+   * \param[in]    value - timeout value in millisec
+   *
+   * \retval None
+   */
+  virtual void setSessionTimeoutValue(std::optional<std::chrono::milliseconds> value) override;
 
   /**
    * \brief Function to de-initialize Weaver Interface
