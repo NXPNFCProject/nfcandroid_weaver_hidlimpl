@@ -76,16 +76,32 @@ cc_binary {
 }
 
 cc_binary {
-    name: "android.hardware.weaver-service.nxp",
-    relative_install_path: "hw",
-    init_rc: ["aidl_impl/android.hardware.weaver-service.nxp.rc"],
-    vintf_fragments: ["aidl_impl/android.hardware.weaver-service.nxp.xml"],
-    vendor: true,
-    srcs: [
-        "aidl_impl/service.cpp",
-        "aidl_impl/Weaver.cpp",
+    name: "android.hardware.weaver2-service.nxp",
+    defaults: [
+        "jc_weaver_defaults.nxp",
     ],
 
+    init_rc: ["aidl_impl/android.hardware.weaver2-service.nxp.rc"],
+    vintf_fragments: ["aidl_impl/android.hardware.weaver2-service.nxp.xml"],
+
+    srcs: [
+        "aidl_impl/Weaver2Service.cpp",
+        "aidl_impl/Weaver2.cpp",
+    ],
+
+    shared_libs: [
+        "android.hardware.weaver-V2-ndk",
+    ],
+}
+
+cc_defaults {
+    name: "jc_weaver_defaults.nxp",
+    relative_install_path: "hw",
+    vendor: true,
+
+    srcs: [
+        "aidl_impl/WeaverCore.cpp",
+    ],
     local_include_dirs: [
         "libese_weaver/inc",
     ],
@@ -94,7 +110,6 @@ cc_binary {
         "-fexceptions",
     ],
     shared_libs: [
-        "android.hardware.weaver-V2-ndk",
         "libbase",
         "libbinder_ndk",
         "liblog",

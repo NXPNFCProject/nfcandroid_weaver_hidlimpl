@@ -21,6 +21,8 @@
 #include <weaver-impl.h>
 #include <weaver_interface.h>
 
+#include "WeaverCore.h"
+
 namespace aidl {
 namespace android {
 namespace hardware {
@@ -30,22 +32,23 @@ using ::aidl::android::hardware::weaver::WeaverConfig;
 using ::aidl::android::hardware::weaver::WeaverReadResponse;
 using ::ndk::ScopedAStatus;
 using std::vector;
+using WeaverCore = ::aidl::android::hardware::weaver::WeaverCore;
 
-struct Weaver : public BnWeaver {
-public:
-  Weaver();
+struct Weaver2 : public BnWeaver {
+ public:
+  Weaver2() : weaverImpl_(std::make_shared<WeaverCore>()) {};
   // Methods from ::android::hardware::weaver::IWeaver follow.
-  ScopedAStatus getConfig(WeaverConfig *_aidl_return) override;
-  ScopedAStatus read(int32_t in_slotId, const vector<uint8_t> &in_key,
-                     WeaverReadResponse *_aidl_return) override;
-  ScopedAStatus write(int32_t in_slotId, const vector<uint8_t> &in_key,
-                      const vector<uint8_t> &in_value) override;
+  ScopedAStatus getConfig(WeaverConfig* _aidl_return) override;
+  ScopedAStatus read(int32_t in_slotId, const vector<uint8_t>& in_key,
+                     WeaverReadResponse* _aidl_return) override;
+  ScopedAStatus write(int32_t in_slotId, const vector<uint8_t>& in_key,
+                      const vector<uint8_t>& in_value) override;
 
-private:
-  WeaverInterface *pInterface = nullptr;
+ private:
+  std::shared_ptr<WeaverCore> weaverImpl_;
 };
 
-} // namespace weaver
-} // namespace hardware
-} // namespace android
-} // namespace aidl
+}  // namespace weaver
+}  // namespace hardware
+}  // namespace android
+}  // namespace aidl
