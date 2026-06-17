@@ -41,6 +41,10 @@ int main() {
       ALOGE("ios failure Exception occurred = %s ", e.what());
   } catch (std::__1::system_error& e) {
       ALOGE("system error Exception occurred = %s ", e.what());
+  } catch (std::bad_array_new_length& e) {
+      ALOGE("bad_array_new_length error Exception occurred = %s ", e.what());
+  } catch (std::length_error& e) {
+      ALOGE("length_error Exception occurred = %s ", e.what());
   }
   return -1; // Should never be reached
 }
