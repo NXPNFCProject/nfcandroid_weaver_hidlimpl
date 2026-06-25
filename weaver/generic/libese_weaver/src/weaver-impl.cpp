@@ -275,7 +275,8 @@ Status_Weaver WeaverImpl::getSlotThrottleValue(uint32_t slotId, int64_t *throttl
               if ( status == WEAVER_STATUS_OK) {
                   /* convert timeout from getDataInfo sec to millisecond assign same to read
                    * response */
-                  *throttleTimeoutValue = (getDataInfo.timeout * 1000);
+                  *throttleTimeoutValue =
+                      static_cast<int64_t>(getDataInfo.timeout) * 1000;
               }
       } else {
         LOG_E(TAG, "Failed to fetch throttle value using getDataCmd");
